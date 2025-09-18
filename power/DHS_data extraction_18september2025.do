@@ -483,7 +483,7 @@ gen cov1 = num1 / den1
 gen cov2 = num2 / den2
 
 corr cov1 cov2 
-regress cov1 cov2 
+regress cov1 cov2 // R-squared: .1301
 
 keep cov1 cov2 v001 
 tempfile coverage_cluster 
@@ -497,7 +497,7 @@ merge m:1 v001 using `coverage_cluster'
 
 gen dtp3 = inlist(h7, 1, 2, 3)
 
-regress dtp3 cov2 if b8==1 
+regress dtp3 cov2 if b8==1 // R-squared: .0933
 
 ****************** check for correlation at regional level
 use v001 v002 bidx b4 b8 b19 v024 v005 h7  ///
@@ -540,5 +540,16 @@ drop _merge
 gen cov1 = num1 / den1
 gen cov2 = num2 / den2
 
-corr cov1 cov2 
+tempfile coverage_region
+save `coverage_region', replace
 
+corr cov1 cov2 // .8694
+
+regress cov1 cov2 // .7559
+
+use v001 v002 bidx b4 b8 b19 v024 v005 h7  ///
+    using "Data/DHS/ZMKR71FL.DTA", clear
+gen dtp3 = inlist(h7, 1, 2, 3)
+merge m:1 v024 using `coverage_region'
+
+regress dtp3 cov2 if b8==1 // explanatory power of region-level coverage for individuals
